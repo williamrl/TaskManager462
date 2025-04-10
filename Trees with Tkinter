@@ -1,21 +1,21 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import datetime
+import csv
 
 class ScheduleBuilder:
     def __init__(self, root):
         self.root = root
-        root.title("Schedule Builder with Sorting and Filtering")
+        root.title("Schedule Builder with Tree")
 
         self.tasks = []
-        self.selected_item = None
-        self.current_sort_column = None  # Keeps track of the current sort column
-        self.sort_order = True  # True for ascending, False for descending
+        self.load_tasks()
 
         self.create_widgets()
+        self.selected_item = None
 
     def create_widgets(self):
-        # Task input fields
+        # Input Fields
         ttk.Label(self.root, text="Task:").grid(row=0, column=0, sticky=tk.W)
         self.task_entry = ttk.Entry(self.root, width=30)
         self.task_entry.grid(row=0, column=1, sticky=tk.E)
@@ -28,10 +28,11 @@ class ScheduleBuilder:
         self.time_entry = ttk.Entry(self.root, width=30)
         self.time_entry.grid(row=2, column=1, sticky=tk.E)
 
-        ttk.Label(self.root, text="Importance Level:").grid(row=3, column=0, sticky=tk.W)
-        self.importance_combobox = ttk.Combobox(self.root, values=["Low", "Medium", "High"], width=27)
+        ttk.Label(self.root, text="Importance:").grid(row=3, column=0, sticky=tk.W)
+        self.importance_var = tk.StringVar()
+        self.importance_combobox = ttk.Combobox(self.root, textvariable=self.importance_var, values=["Low", "Medium", "High"], state="readonly", width=28)
         self.importance_combobox.grid(row=3, column=1, sticky=tk.E)
-        self.importance_combobox.set("Medium")  # Default to Medium importance
+        self.importance_combobox.set("Low")  # Default importance
 
         # Buttons
         add_button = ttk.Button(self.root, text="Add Task", command=self.add_task)
@@ -43,46 +44,46 @@ class ScheduleBuilder:
         delete_button = ttk.Button(self.root, text="Delete Task", command=self.delete_task)
         delete_button.grid(row=4, column=1, sticky=tk.W)
 
-        # Treeview for displaying schedule
+        # Treeview for displaying tasks
         self.tree = ttk.Treeview(self.root, columns=("Date", "Time", "Task", "Importance"), show="headings", height=10)
-        self.tree.heading("Date", text="Date", command=lambda: self.sort_column("Date"))
-        self.tree.heading("Time", text="Time", command=lambda: self.sort_column("Time"))
-        self.tree.heading("Task", text="Task", command=lambda: self.sort_column("Task"))
-        self.tree.heading("Importance", text="Importance", command=lambda: self.sort_column("Importance"))
+        self.tree.heading("Date", text="Date", command=lambda: self.sort_by("Date"))
+        self.tree.heading("Time", text="Time", command=lambda: self.sort_by("Time"))
+        self.tree.heading("Task", text="Task", command=lambda: self.sort_by("Task"))
+        self.tree.heading("Importance", text="Importance", command=lambda: self.sort_by("Importance"))
 
         self.tree.column("Date", width=100, anchor=tk.CENTER)
-        self.tree.column("Time", width=150, anchor=tk.CENTER)
+        self.tree.column("Time", width=100, anchor=tk.CENTER)
         self.tree.column("Task", width=200)
-        self.tree.column("Importance", width=100, anchor=tk.CENTER)
+        self.tree.column("Importance", width=100)
 
-        self.tree.grid(row=5, column=0, columnspan=2, pady=10)
+        self.tree.grid(row=5, column=0, columnspan=3, pady=10)
         self.tree.bind("<<TreeviewSelect>>", self.on_tree_select)
 
-        # Scrollbar for the treeview
+        # Scrollbar for Treeview
         scrollbar = ttk.Scrollbar(self.root, orient=tk.VERTICAL, command=self.tree.yview)
         self.tree.configure(yscrollcommand=scrollbar.set)
-        scrollbar.grid(row=5, column=2, sticky='ns')
+        scrollbar.grid(row=5, column=3, sticky='ns')
 
-        # Treeview style for color-coding overdue tasks
+        # Treeview style for overdue tasks
         self.tree.tag_configure("overdue", foreground="red")
 
     def add_task(self):
         task = self.task_entry.get()
         date_str = self.date_entry.get()
         time_str = self.time_entry.get()
-        importance = self.importance_combobox.get()
+        importance = self.importance_var.get()
 
-        # Validate date and time
+        # Validate inputs
         try:
-            # Ensure the time format is HH:MM AM/PM
             datetime.datetime.strptime(date_str, '%Y-%m-%d')
-            datetime.datetime.strptime(time_str, '%I:%M %p')  # %I for 12-hour format, %p for AM/PM
+            datetime.datetime.strptime(time_str, '%I:%M %p')  # 12-hour format
         except ValueError:
             messagebox.showerror("Invalid Input", "Please enter date as YYYY-MM-DD and time as HH:MM AM/PM.")
             return
 
-        # Add the task with its importance level
-        self.tasks.append((date_str, time_str, task, importance))
+        # Add task to list and update the display
+        self.tasks.append([date_str, time_str, task, importance])
+        self.save_tasks()
         self.clear_inputs()
         self.update_schedule_display()
 
@@ -95,7 +96,7 @@ class ScheduleBuilder:
         item = selected[0]
         values = self.tree.item(item, 'values')
 
-        # Populate entries with selected task values
+        # Populate inputs with selected task values
         self.date_entry.delete(0, tk.END)
         self.date_entry.insert(0, values[0])
         self.time_entry.delete(0, tk.END)
@@ -106,34 +107,6 @@ class ScheduleBuilder:
 
         self.selected_item = item
 
-        # Change Add button to Update
-        update_button = ttk.Button(self.root, text="Update Task", command=self.update_task)
-        update_button.grid(row=4, column=0, sticky=tk.E)
-
-    def update_task(self):
-        if not self.selected_item:
-            return
-
-        date_str = self.date_entry.get()
-        time_str = self.time_entry.get()
-        task = self.task_entry.get()
-        importance = self.importance_combobox.get()
-
-        try:
-            datetime.datetime.strptime(date_str, '%Y-%m-%d')
-            datetime.datetime.strptime(time_str, '%I:%M %p')  # %I for 12-hour format, %p for AM/PM
-        except ValueError:
-            messagebox.showerror("Invalid Input", "Please enter date as YYYY-MM-DD and time as HH:MM AM/PM.")
-            return
-
-        # Update task list
-        index = self.tree.index(self.selected_item)
-        self.tasks[index] = (date_str, time_str, task, importance)
-
-        self.selected_item = None
-        self.clear_inputs()
-        self.update_schedule_display()
-
     def delete_task(self):
         selected = self.tree.selection()
         if not selected:
@@ -143,7 +116,9 @@ class ScheduleBuilder:
         item = selected[0]
         index = self.tree.index(item)
 
+        # Delete task from list and Treeview
         del self.tasks[index]
+        self.save_tasks()
         self.tree.delete(item)
 
     def on_tree_select(self, event):
@@ -153,44 +128,54 @@ class ScheduleBuilder:
         self.task_entry.delete(0, tk.END)
         self.date_entry.delete(0, tk.END)
         self.time_entry.delete(0, tk.END)
-        self.importance_combobox.set("Medium")  # Reset to default
+        self.importance_combobox.set("Low")
 
     def update_schedule_display(self):
-        # Clear current contents
-        for item in self.tree.get_children():
-            self.tree.delete(item)
+        self.tree.delete(*self.tree.get_children())
 
-        # Sort tasks by importance and then by date/time
-        self.tasks.sort(key=lambda x: (x[0], x[1]))  # Sort by Date and Time first
-
-        # Get current datetime for overdue comparison
+        # Sort tasks and update Treeview
+        self.tasks.sort()
         now = datetime.datetime.now()
 
-        # Add tasks to the treeview
         for date_str, time_str, task, importance in self.tasks:
             task_datetime = datetime.datetime.strptime(f"{date_str} {time_str}", '%Y-%m-%d %I:%M %p')
             is_overdue = task_datetime < now
 
+            # Insert tasks with color-coding for overdue tasks
             self.tree.insert(
                 "", tk.END,
                 values=(date_str, time_str, task, importance),
                 tags=("overdue",) if is_overdue else ()
             )
 
-    def sort_column(self, col):
-        """Sort the Treeview based on the selected column."""
-        if col == "Date":
-            col_index = 0
-        elif col == "Time":
-            col_index = 1
-        elif col == "Task":
-            col_index = 2
-        else:
-            col_index = 3  # Importance column
-        
-        # Sort tasks by the selected column
-        self.sort_order = not self.sort_order  # Toggle the sort order
-        self.tasks.sort(key=lambda x: x[col_index], reverse=not self.sort_order)
+    def save_tasks(self):
+        # Write tasks to a CSV file
+        with open('tasks.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Date", "Time", "Task", "Importance"])  # Write header
+            writer.writerows(self.tasks)  # Write tasks
+
+    def load_tasks(self):
+        # Read tasks from CSV file if it exists
+        try:
+            with open('tasks.csv', 'r') as file:
+                reader = csv.reader(file)
+                next(reader)  # Skip the header row
+                self.tasks = [row for row in reader]
+        except FileNotFoundError:
+            self.tasks = []
+
+    def sort_by(self, column):
+        """Sort tasks by the clicked column header."""
+        if column == "Date":
+            self.tasks.sort(key=lambda task: datetime.datetime.strptime(f"{task[0]} {task[1]}", '%Y-%m-%d %I:%M %p'))
+        elif column == "Time":
+            self.tasks.sort(key=lambda task: datetime.datetime.strptime(f"{task[0]} {task[1]}", '%Y-%m-%d %I:%M %p'))
+        elif column == "Task":
+            self.tasks.sort(key=lambda task: task[2].lower())
+        elif column == "Importance":
+            importance_order = {"Low": 0, "Medium": 1, "High": 2}
+            self.tasks.sort(key=lambda task: importance_order.get(task[3], 0))
 
         self.update_schedule_display()
 
@@ -199,3 +184,4 @@ if __name__ == "__main__":
     root = tk.Tk()
     schedule_builder = ScheduleBuilder(root)
     root.mainloop()
+
