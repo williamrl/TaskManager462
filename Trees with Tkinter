@@ -107,6 +107,37 @@ class ScheduleBuilder:
 
         self.selected_item = item
 
+        # Change Add button to Update
+        update_button = ttk.Button(self.root, text="Update Task", command=self.update_task)
+        update_button.grid(row=4, column=0, sticky=tk.E)
+
+    def update_task(self):
+        if not self.selected_item:
+            return
+
+        # Get updated values from input fields
+        date_str = self.date_entry.get()
+        time_str = self.time_entry.get()
+        task = self.task_entry.get()
+        importance = self.importance_var.get()
+
+        # Validate inputs
+        try:
+            datetime.datetime.strptime(date_str, '%Y-%m-%d')
+            datetime.datetime.strptime(time_str, '%I:%M %p')  # 12-hour format
+        except ValueError:
+            messagebox.showerror("Invalid Input", "Please enter date as YYYY-MM-DD and time as HH:MM AM/PM.")
+            return
+
+        # Find the index of the selected task in the tasks list
+        index = self.tree.index(self.selected_item)
+        self.tasks[index] = [date_str, time_str, task, importance]  # Update the task in the list
+
+        self.selected_item = None  # Reset selected item
+        self.clear_inputs()  # Clear the input fields
+        self.save_tasks()  # Save the updated task list to the file
+        self.update_schedule_display()  # Update the task display
+
     def delete_task(self):
         selected = self.tree.selection()
         if not selected:
@@ -184,4 +215,5 @@ if __name__ == "__main__":
     root = tk.Tk()
     schedule_builder = ScheduleBuilder(root)
     root.mainloop()
+
 
