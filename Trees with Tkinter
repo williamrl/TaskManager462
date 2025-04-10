@@ -1,0 +1,162 @@
+import tkinter as tk
+from tkinter import ttk, messagebox
+import datetime
+
+class ScheduleBuilder:
+    def __init__(self, root):
+        self.root = root
+        root.title("Schedule Builder with Tree")
+
+        self.tasks = []
+
+        self.create_widgets()
+        self.selected_item = None
+
+    def create_widgets(self):
+        # Input Fields
+        ttk.Label(self.root, text="Task:").grid(row=0, column=0, sticky=tk.W)
+        self.task_entry = ttk.Entry(self.root, width=30)
+        self.task_entry.grid(row=0, column=1, sticky=tk.E)
+
+        ttk.Label(self.root, text="Date (YYYY-MM-DD):").grid(row=1, column=0, sticky=tk.W)
+        self.date_entry = ttk.Entry(self.root, width=30)
+        self.date_entry.grid(row=1, column=1, sticky=tk.E)
+
+        ttk.Label(self.root, text="Time (HH:MM):").grid(row=2, column=0, sticky=tk.W)
+        self.time_entry = ttk.Entry(self.root, width=30)
+        self.time_entry.grid(row=2, column=1, sticky=tk.E)
+
+        # Buttons
+        add_button = ttk.Button(self.root, text="Add Task", command=self.add_task)
+        add_button.grid(row=3, column=1, sticky=tk.E)
+
+        edit_button = ttk.Button(self.root, text="Edit Task", command=self.edit_task)
+        edit_button.grid(row=3, column=0, sticky=tk.W)
+
+        delete_button = ttk.Button(self.root, text="Delete Task", command=self.delete_task)
+        delete_button.grid(row=3, column=1, sticky=tk.W)
+
+        # Treeview
+        self.tree = ttk.Treeview(self.root, columns=("Date", "Time", "Task"), show="headings", height=10)
+        self.tree.heading("Date", text="Date")
+        self.tree.heading("Time", text="Time")
+        self.tree.heading("Task", text="Task")
+
+        self.tree.column("Date", width=100, anchor=tk.CENTER)
+        self.tree.column("Time", width=100, anchor=tk.CENTER)
+        self.tree.column("Task", width=200)
+
+        self.tree.grid(row=4, column=0, columnspan=2, pady=10)
+        self.tree.bind("<<TreeviewSelect>>", self.on_tree_select)
+
+        # Scrollbar
+        scrollbar = ttk.Scrollbar(self.root, orient=tk.VERTICAL, command=self.tree.yview)
+        self.tree.configure(yscrollcommand=scrollbar.set)
+        scrollbar.grid(row=4, column=2, sticky='ns')
+
+        # Treeview style for color-coding
+        self.tree.tag_configure("overdue", foreground="red")
+
+    def add_task(self):
+        task = self.task_entry.get()
+        date_str = self.date_entry.get()
+        time_str = self.time_entry.get()
+
+        # Validate inputs
+        try:
+            datetime.datetime.strptime(date_str, '%Y-%m-%d')
+            datetime.datetime.strptime(time_str, '%H:%M')
+        except ValueError:
+            messagebox.showerror("Invalid Input", "Please enter date as YYYY-MM-DD and time as HH:MM.")
+            return
+
+        self.tasks.append((date_str, time_str, task))
+        self.clear_inputs()
+        self.update_schedule_display()
+
+    def edit_task(self):
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("No Selection", "Please select a task to edit.")
+            return
+
+        item = selected[0]
+        values = self.tree.item(item, 'values')
+
+        # Populate entries with selected task values
+        self.date_entry.delete(0, tk.END)
+        self.date_entry.insert(0, values[0])
+        self.time_entry.delete(0, tk.END)
+        self.time_entry.insert(0, values[1])
+        self.task_entry.delete(0, tk.END)
+        self.task_entry.insert(0, values[2])
+
+        self.selected_item = item
+
+        # Change Add button to Update
+        update_button = ttk.Button(self.root, text="Update Task", command=self.update_task)
+        update_button.grid(row=3, column=0, sticky=tk.E)
+
+    def update_task(self):
+        if not self.selected_item:
+            return
+
+        date_str = self.date_entry.get()
+        time_str = self.time_entry.get()
+        task = self.task_entry.get()
+
+        try:
+            datetime.datetime.strptime(date_str, '%Y-%m-%d')
+            datetime.datetime.strptime(time_str, '%H:%M')
+        except ValueError:
+            messagebox.showerror("Invalid Input", "Please enter date as YYYY-MM-DD and time as HH:MM.")
+            return
+
+        # Update task list
+        index = self.tree.index(self.selected_item)
+        self.tasks[index] = (date_str, time_str, task)
+
+        self.selected_item = None
+        self.clear_inputs()
+        self.update_schedule_display()
+
+    def delete_task(self):
+        selected = self.tree.selection()
+        if not selected:
+            messagebox.showwarning("No Selection", "Please select a task to delete.")
+            return
+
+        item = selected[0]
+        index = self.tree.index(item)
+
+        del self.tasks[index]
+        self.tree.delete(item)
+
+    def on_tree_select(self, event):
+        self.selected_item = self.tree.selection()[0] if self.tree.selection() else None
+
+    def clear_inputs(self):
+        self.task_entry.delete(0, tk.END)
+        self.date_entry.delete(0, tk.END)
+        self.time_entry.delete(0, tk.END)
+
+    def update_schedule_display(self):
+        self.tree.delete(*self.tree.get_children())
+
+        self.tasks.sort()
+        now = datetime.datetime.now()
+
+        for date_str, time_str, task in self.tasks:
+            task_datetime = datetime.datetime.strptime(f"{date_str} {time_str}", '%Y-%m-%d %H:%M')
+            is_overdue = task_datetime < now
+
+            self.tree.insert(
+                "", tk.END,
+                values=(date_str, time_str, task),
+                tags=("overdue",) if is_overdue else ()
+            )
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    schedule_builder = ScheduleBuilder(root)
+    root.mainloop()
