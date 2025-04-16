@@ -1,0 +1,33 @@
+.side-nav {
+    width: 150px;
+    height: 100vh;
+    background-color: #2e2e2e;
+    color: white;
+    padding: 20px;
+    position: relative;
+    top: 0;
+    left: 0;
+  }
+  
+  .side-nav h2 {
+    margin-bottom: 20px;
+  }
+  
+  .side-nav ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .side-nav ul li {
+    margin: 15px 0;
+  }
+  
+  .side-nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+  }
+  
+  .side-nav ul li a:hover {
+    text-decoration: underline;
+  }
