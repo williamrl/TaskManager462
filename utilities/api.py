@@ -47,6 +47,21 @@ def delete_task():
     session.close()
     return jsonify({"message": message})
 
+# Route to update a task
+@app.route("/update_task", methods=["PUT"])
+def update_task():
+    data = request.json
+    session = SessionLocal()
+    task = session.query(Task).filter(Task.id == data["id"]).first()
+    if task:
+        task.name = data["name"]
+        task.date = data["date"]
+        session.commit()
+        message = "Task updated!"
+    else:
+        message = "Task not found!"
+    session.close()
+    return jsonify({"message": message})
 
 if __name__ == "__main__":
     app.run(debug=True)
