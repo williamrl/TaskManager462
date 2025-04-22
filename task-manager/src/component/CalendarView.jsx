@@ -1,3 +1,4 @@
+// src/components/CalendarView.jsx
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
@@ -16,14 +17,14 @@ const localizer = dateFnsLocalizer({
 
 export default function CalendarView({ events }) {
   return (
-    <div style={{ height: '80vh', margin: '20px' }}>
+    <div style={{ height: '80vh', marginTop: '20px' }}>
       <Calendar
         localizer={localizer}
         events={events}
         startAccessor="start"
         endAccessor="end"
         titleAccessor="title"
-        style={{ height: 500 }}
+        style={{ height: 600 }}
       />
     </div>
   );
