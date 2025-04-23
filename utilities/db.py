@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
 Base = declarative_base()
-engine = create_engine("sqlite:///tasks.db")  # Replace with your database URL
+engine = create_engine("mysql+pymysql://root:@localhost/task_manager")  # Replace with your database URL
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 class Task(Base):
