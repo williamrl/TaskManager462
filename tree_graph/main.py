@@ -1,5 +1,6 @@
 from task_tree import TaskNode
 from task_graph import TaskGraph
+from task_tree import build_task_tree
 
 # Create tree hierarchy
 root = TaskNode("Project Alpha", 1)

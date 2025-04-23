@@ -1,20 +1,19 @@
-from sqlalchemy import create_engine, Column, Integer, String
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 
-# MySQL connection URL (adjust if you set a password)
-DATABASE_URL = "mysql+pymysql://root:@localhost/task_manager"
-
-engine = create_engine(DATABASE_URL, echo=True)
-SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
+engine = create_engine("sqlite:///tasks.db")  # Replace with your database URL
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Define your Task table
 class Task(Base):
     __tablename__ = 'tasks'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255))
-    date = Column(String(50))  # e.g. "Monday", "Tuesday", etc.
+    date = Column(String(50))
+    parent_id = Column(Integer, ForeignKey('tasks.id'), nullable=True)
 
-# Create the table(s) in the database
+# Create tables if they don't exist
 Base.metadata.create_all(bind=engine)
