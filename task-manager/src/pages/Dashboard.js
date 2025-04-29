@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Grid, Paper, Typography, Box, List, ListItem, ListItemText, Button, Modal, TextField } from "@mui/material";
 import { format, addDays, startOfWeek, subWeeks, addWeeks, parse } from 'date-fns';
-import { getTasks } from '../utils/api';
+import { getTasks, addTask } from '../utils/api';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -73,6 +73,26 @@ function Dashboard() {
     }
   };
 
+  const handleAddTask = async () => {
+    try {
+      if (!taskName || !taskDate) {
+        console.log("Task name and date are required!");
+        return;
+      }
+
+      // const result = await addTask(taskName, taskDate, parentTaskId);
+      const result = await addTask(taskName, taskDate, null);
+
+      console.log(result.message); // Logs "Task added!" if successful
+      setTaskName(""); // Clear input fields
+      setTaskDate(new Date());
+      setOpenAddTask(false); // Close modal
+      fetchTasks(); // Refresh tasks
+    } catch (error) {
+      console.error("Error adding task:", error);
+    }
+  };
+  
   // Load tasks on component mount
   useEffect(() => {
     fetchTasks();
@@ -102,14 +122,7 @@ function Dashboard() {
     });
   };
 
-  // Placeholder for add task logic
-  const handleAddTask = () => {
-    console.log(`Adding task: ${taskName} on ${taskDate}`);
-    setOpenAddTask(false);
-    setTaskName('');
-    setTaskDate('');
-    fetchTasks(); // Refresh tasks after adding
-  };
+
 
   // Build nested task structure based on parent_task_id
   const buildTaskHierarchy = (tasks) => {

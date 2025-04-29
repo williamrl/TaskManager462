@@ -22,6 +22,39 @@ export const getTasks = async () => {
   }
 };
 
+// Function to add a new task
+export async function addTask(taskName, date, parentTaskId = null) {
+  const url = `${API_BASE_URL}/add_task`; // Use API_BASE_URL for the base URL
+  
+  const formattedDate = new Date(date).toLocaleDateString('en-CA'); // Converts to YYYY-MM-DD  
+  const taskData = {
+      task_name: taskName,
+      date: formattedDate,
+      parent_task_id: parentTaskId, // Optional for subtasks
+  };
+
+  try {
+      const response = await fetch(url, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+          },
+          body: JSON.stringify(taskData),
+      });
+
+      if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log(result.message);
+      return result;
+  } catch (error) {
+      console.error("Error adding task:", error);
+      throw error;
+  }
+}
+
 export const getTaskTree = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/task_tree`, {
