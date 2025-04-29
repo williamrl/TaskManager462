@@ -5,7 +5,6 @@ import { getTasks, addTask } from '../utils/api';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-
 import './Dashboard.css';
 
 // Days of the week for rendering the calendar
@@ -83,7 +82,6 @@ function Dashboard() {
       // const result = await addTask(taskName, taskDate, parentTaskId);
       const result = await addTask(taskName, taskDate, null);
 
-      console.log(result.message); // Logs "Task added!" if successful
       setTaskName(""); // Clear input fields
       setTaskDate(new Date());
       setOpenAddTask(false); // Close modal
@@ -121,8 +119,6 @@ function Dashboard() {
       return startOfWeek(new Date());
     });
   };
-
-
 
   // Build nested task structure based on parent_task_id
   const buildTaskHierarchy = (tasks) => {
