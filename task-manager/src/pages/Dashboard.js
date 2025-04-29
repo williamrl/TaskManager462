@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Grid, Paper, Typography, Box, List, ListItem, ListItemText, Button, Modal, TextField } from "@mui/material";
 import { format, addDays, startOfWeek, subWeeks, addWeeks, parse } from 'date-fns';
 import { getTasks } from '../utils/api';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+
 import './Dashboard.css';
 
 // Days of the week for rendering the calendar
@@ -13,7 +17,7 @@ const AddTaskModal = ({ open, onClose, taskName, setTaskName, taskDate, setTaskD
     <Box className="add-modal">
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>Add New Task</Typography>
+          <Typography sx={{ color: 'black' }} variant="h6" gutterBottom>Add New Task</Typography>
         </Grid>
         <Grid item xs={12}>
           <TextField
@@ -24,12 +28,16 @@ const AddTaskModal = ({ open, onClose, taskName, setTaskName, taskDate, setTaskD
           />
         </Grid>
         <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Date (YYYY-MM-DD)"
-            value={taskDate}
-            onChange={(e) => setTaskDate(e.target.value)}
-          />
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              label="Task Date"
+              value={taskDate}
+              onChange={(newValue) => {
+                setTaskDate(newValue);
+              }}
+              renderInput={(params) => <TextField fullWidth {...params} />}
+            />
+          </LocalizationProvider>
         </Grid>
         <Grid item xs={12}>
           <Button variant="contained" color="primary" fullWidth onClick={onAddTask}>
@@ -41,12 +49,13 @@ const AddTaskModal = ({ open, onClose, taskName, setTaskName, taskDate, setTaskD
   </Modal>
 );
 
+
 function Dashboard() {
   const [events, setEvents] = useState([]); // lists of tasks
   const [openAddTask, setOpenAddTask] = useState(false); // if true show add task modal pop up
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date())); // start of the week
   const [taskName, setTaskName] = useState(''); // name of the task
-  const [taskDate, setTaskDate] = useState(''); // date of the task
+  const [taskDate, setTaskDate] = useState(new Date()); // date of the task
 
   // Fetch tasks from the backend
   const fetchTasks = async () => {
@@ -99,6 +108,7 @@ function Dashboard() {
     setOpenAddTask(false);
     setTaskName('');
     setTaskDate('');
+    fetchTasks(); // Refresh tasks after adding
   };
 
   // Build nested task structure based on parent_task_id
@@ -133,7 +143,7 @@ function Dashboard() {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <Box sx={headerStyle}>
+      <Box className="header">
         <Typography variant="h4" textAlign="center" sx={{ flexGrow: 1 }}>
           Weekly Task Dashboard ({weekRange})
         </Typography>
@@ -178,14 +188,6 @@ function Dashboard() {
     </Box>
   );
 }
-
-// Header styling
-const headerStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  mb: 2,
-};
 
 // Paper styling with highlighting for today
 const getPaperStyle = (highlight) => ({

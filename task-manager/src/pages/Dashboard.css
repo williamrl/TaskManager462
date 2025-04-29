@@ -9,3 +9,10 @@
     padding: 16px;
     width: 300px;
 }
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px; /* mb: 2 in Material-UI translates to 16px */
+}

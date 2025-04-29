@@ -69,7 +69,7 @@ def update_task():
     if task:
         task.task_name = data["task_name"]
         task.date = data["date"]
-        task.parent_task_id = data.get("parent_task_id")  # Optional update
+        task.parent_task_id = data.get("parent_task_id")
         session.commit()
         message = "Task updated!"
     else:
