@@ -1,193 +1,170 @@
 import React, { useEffect, useState } from 'react';
 import { Grid, Paper, Typography, Box, List, ListItem, ListItemText, Button, Modal, TextField } from "@mui/material";
-import { format, addDays, startOfWeek, subWeeks, addWeeks } from 'date-fns';
+import { format, addDays, startOfWeek, subWeeks, addWeeks, parse } from 'date-fns';
 import { getTasks } from '../utils/api';
+import './Dashboard.css';
 
+// Days of the week for rendering the calendar
 const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
+// Modal component for adding a new task
+const AddTaskModal = ({ open, onClose, taskName, setTaskName, taskDate, setTaskDate, onAddTask }) => (
+  <Modal open={open} onClose={onClose}>
+    <Box className="add-modal">
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <Typography variant="h6" gutterBottom>Add New Task</Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Task Name"
+            value={taskName}
+            onChange={(e) => setTaskName(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Date (YYYY-MM-DD)"
+            value={taskDate}
+            onChange={(e) => setTaskDate(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Button variant="contained" color="primary" fullWidth onClick={onAddTask}>
+            Add Task
+          </Button>
+        </Grid>
+      </Grid>
+    </Box>
+  </Modal>
+);
+
 function Dashboard() {
-  const [events, setEvents] = useState([]);
-  const [openAddTask, setOpen] = useState(false);
-  const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 0 }));
-  const [taskName, setTaskName] = useState('');
-  const [taskDate, setTaskDate] = useState('');
+  const [events, setEvents] = useState([]); // lists of tasks
+  const [openAddTask, setOpenAddTask] = useState(false); // if true show add task modal pop up
+  const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date())); // start of the week
+  const [taskName, setTaskName] = useState(''); // name of the task
+  const [taskDate, setTaskDate] = useState(''); // date of the task
 
-  const handlePreviousWeek = () => setCurrentWeekStart(prev => subWeeks(prev, 1));
-  const handleNextWeek = () => setCurrentWeekStart(prev => addWeeks(prev, 1));
-  const handleToday = () => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }));
+  // Fetch tasks from the backend
+  const fetchTasks = async () => {
+    try {
+      const tasks = await getTasks();
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const handleAddTask = () => {
-    console.log(`Adding task: ${taskName} on ${taskDate}`);
-    setOpen(false);
-    setTaskName('');
-    setTaskDate('');
+      const formattedTasks = Object.entries(tasks).map(([date, tasksForDate]) => ({
+        date: parse(date, 'yyyy-MM-dd', new Date()), // Fix: parse date in local time instead of UTC
+        tasks: tasksForDate
+      }));
+
+      setEvents(formattedTasks);
+    } catch (error) {
+      console.error('Failed to load tasks:', error);
+    }
   };
+
+  // Load tasks on component mount
+  useEffect(() => {
+    fetchTasks();
+  }, []);
 
   const weekEnd = addDays(currentWeekStart, 6);
   const weekRange = `${format(currentWeekStart, 'MM/dd/yyyy')} - ${format(weekEnd, 'MM/dd/yyyy')}`;
 
+  // Build day labels with matching Date objects
   const daysWithDates = daysOfWeek.map((day, index) => ({
     label: `${day} ${format(addDays(currentWeekStart, index), 'M/d')}`,
     date: addDays(currentWeekStart, index),
   }));
 
-  const isToday = (someDate) => {
+  // Check if a date is today
+  const isToday = (date) => {
     const today = new Date();
-    return someDate.getDate() === today.getDate() &&
-      someDate.getMonth() === today.getMonth() &&
-      someDate.getFullYear() === today.getFullYear();
+    return date.toDateString() === today.toDateString();
   };
 
-  const buildTaskHierarchy = (tasks) => {
-    const taskMap = {};
-    const rootTasks = [];
-
-    // Create a map of all tasks
-    tasks.forEach(task => {
-      taskMap[task.id] = { ...task, subtasks: [] };
+  // Handle navigation buttons
+  const handleNavigation = (direction) => {
+    setCurrentWeekStart(prev => {
+      if (direction === 'prev') return subWeeks(prev, 1);
+      if (direction === 'next') return addWeeks(prev, 1);
+      return startOfWeek(new Date());
     });
+  };
 
-    // Build the hierarchy
+  // Placeholder for add task logic
+  const handleAddTask = () => {
+    console.log(`Adding task: ${taskName} on ${taskDate}`);
+    setOpenAddTask(false);
+    setTaskName('');
+    setTaskDate('');
+  };
+
+  // Build nested task structure based on parent_task_id
+  const buildTaskHierarchy = (tasks) => {
+    const map = {};
+    const roots = [];
+
+    tasks.forEach(task => map[task.id] = { ...task, subtasks: [] });
+
     tasks.forEach(task => {
       if (task.parent_task_id) {
-        const parent = taskMap[task.parent_task_id];
-        if (parent) {
-          parent.subtasks.push(taskMap[task.id]);
-        }
+        map[task.parent_task_id]?.subtasks.push(map[task.id]);
       } else {
-        rootTasks.push(taskMap[task.id]);
+        roots.push(map[task.id]);
       }
     });
 
-    return rootTasks;
+    return roots;
   };
 
-  const renderNestedTasks = (taskList, level = 0) => {
-    if (!taskList || taskList.length === 0) return null;
-
-    return taskList.map((task) => (
+  // Recursive rendering of nested tasks
+  const renderNestedTasks = (taskList, level = 0) => (
+    taskList?.map(task => (
       <React.Fragment key={task.id}>
         <ListItem sx={{ pl: level * 4 }}>
           <ListItemText primary={task.task_name} />
         </ListItem>
-        {task.subtasks && task.subtasks.length > 0 && (
-          renderNestedTasks(task.subtasks, level + 1)
-        )}
+        {renderNestedTasks(task.subtasks, level + 1)}
       </React.Fragment>
-    ));
-  };
-
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const tasks = await getTasks();
-        console.log('Fetched Tasks:', tasks);
-
-        // Transform the tasks object into our events format
-        const allTasks = Object.keys(tasks).map(date => ({
-          date: new Date(date),
-          tasks: tasks[date]
-        }));
-
-        setEvents(allTasks);
-        console.log('Tasks loaded:', allTasks);
-      } catch (error) {
-        console.error('Failed to load tasks:', error);
-      }
-    };
-
-    fetchTasks();
-  }, []);
+    ))
+  );
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+      <Box sx={headerStyle}>
         <Typography variant="h4" textAlign="center" sx={{ flexGrow: 1 }}>
           Weekly Task Dashboard ({weekRange})
         </Typography>
-        <Button variant="contained" color="primary" onClick={handleOpen} sx={{ mb: 2 }}>
+        <Button variant="contained" color="primary" onClick={() => setOpenAddTask(true)} sx={{ mb: 2 }}>
           Add Task
         </Button>
-        <Button onClick={handlePreviousWeek}>&larr;</Button>
-        <Button onClick={handleNextWeek}>&rarr;</Button>
-        <Button onClick={handleToday}>This Week</Button>
+        <Button onClick={() => handleNavigation('prev')}>&larr;</Button>
+        <Button onClick={() => handleNavigation('next')}>&rarr;</Button>
+        <Button onClick={() => handleNavigation('today')}>This Week</Button>
       </Box>
 
-      <Modal open={openAddTask} onClose={handleClose}>
-        <Box sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          bgcolor: 'background.paper',
-          borderRadius: 2,
-          boxShadow: 24,
-          p: 4,
-          width: 300
-        }}>
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom sx={{ color: 'black' }}>
-                Add New Task
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Task Name"
-                value={taskName}
-                onChange={(e) => setTaskName(e.target.value)}
-                sx={{ mb: 2 }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Date (YYYY-MM-DD)"
-                value={taskDate}
-                onChange={(e) => setTaskDate(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Button variant="contained" color="primary" onClick={handleAddTask}>
-                Add Task
-              </Button>
-            </Grid>
-          </Grid>
-        </Box>
-      </Modal>
+      <AddTaskModal
+        open={openAddTask}
+        onClose={() => setOpenAddTask(false)}
+        taskName={taskName}
+        setTaskName={setTaskName}
+        taskDate={taskDate}
+        setTaskDate={setTaskDate}
+        onAddTask={handleAddTask}
+      />
 
       <Grid container spacing={2}>
         {daysWithDates.map((dayInfo, index) => {
-          const dayEvents = events.find(event => 
-            format(event.date, 'M/d/yyyy') === format(dayInfo.date, 'M/d/yyyy')
-          );
-          
+          // Use yyyy-MM-dd format for consistent comparison
+          const dayKey = format(dayInfo.date, 'yyyy-MM-dd');
+          const dayEvents = events.find(event => format(event.date, 'yyyy-MM-dd') === dayKey);
+
           return (
             <Grid item xs={12} sm={6} md={1} key={index}>
-              <Paper
-                elevation={isToday(dayInfo.date) ? 10 : 3}
-                sx={{
-                  padding: 2,
-                  height: '85vh',
-                  width: '9vw',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  overflowY: 'auto',
-                  border: isToday(dayInfo.date) ? '2px solid #1976d2' : '1px solid #e0e0e0',
-                  backgroundColor: isToday(dayInfo.date) ? '#e3f2fd' : 'white',
-                }}
-              >
-                <Typography
-                  variant="h7"
-                  gutterBottom
-                  sx={{
-                    fontWeight: isToday(dayInfo.date) ? 'bold' : 'normal',
-                    color: isToday(dayInfo.date) ? '#1976d2' : 'inherit',
-                  }}
-                >
+              <Paper sx={getPaperStyle(isToday(dayInfo.date))}>
+                <Typography variant="subtitle2" gutterBottom sx={getTypographyStyle(isToday(dayInfo.date))}>
                   {dayInfo.label}
                 </Typography>
                 <List dense>
@@ -201,5 +178,32 @@ function Dashboard() {
     </Box>
   );
 }
+
+// Header styling
+const headerStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  mb: 2,
+};
+
+// Paper styling with highlighting for today
+const getPaperStyle = (highlight) => ({
+  padding: 2,
+  height: '85vh',
+  width: '9vw',
+  display: 'flex',
+  flexDirection: 'column',
+  overflowY: 'auto',
+  border: highlight ? '2px solid #1976d2' : '1px solid #e0e0e0',
+  backgroundColor: highlight ? '#e3f2fd' : 'white',
+  elevation: highlight ? 10 : 3,
+});
+
+// Typography styling for today
+const getTypographyStyle = (highlight) => ({
+  fontWeight: highlight ? 'bold' : 'normal',
+  color: highlight ? '#1976d2' : 'inherit',
+});
 
 export default Dashboard;
