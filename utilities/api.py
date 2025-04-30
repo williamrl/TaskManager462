@@ -30,52 +30,81 @@ def get_tasks():
 
     return jsonify(grouped)
 
+# Add a new route to fetch the task tree
+@app.route("/task_tree", methods=["GET"])
+def get_task_tree():
+    session = SessionLocal()
+    tasks = session.query(Task).all()
+    session.close()
+
+    # Build the task tree
+    task_dict = {task.id: {"id": task.id, "task_name": task.task_name, "parent_task_id": task.parent_task_id, "children": []} for task in tasks}
+    root_tasks = []
+
+    for task in tasks:
+        if task.parent_task_id:
+            task_dict[task.parent_task_id]["children"].append(task_dict[task.id])
+        else:
+            root_tasks.append(task_dict[task.id])
+
+    return jsonify(root_tasks)
+
 # Route to add a new task
 @app.route("/add_task", methods=["POST"])
 def add_task():
-    data = request.json
-    session = SessionLocal()
-    new_task = Task(
-        task_name=data["task_name"],
-        date=data["date"],
-        parent_task_id=data.get("parent_task_id")  # optional for subtasks
-    )
-    session.add(new_task)
-    session.commit()
-    session.close()
-    return jsonify({"message": "Task added!"})
+    try:
+        data = request.json
+        session = SessionLocal()
+        new_task = Task(
+            task_name=data["task_name"],
+            date=data["date"],
+            parent_task_id=data.get("parent_task_id")  # optional for subtasks
+        )
+        session.add(new_task)
+        session.commit()
+        session.close()
+        return jsonify({"message": "Task added!"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Route to delete a task
 @app.route("/delete_task", methods=["DELETE"])
 def delete_task():
-    data = request.json
-    session = SessionLocal()
-    task = session.query(Task).filter(Task.id == data["id"]).first()
-    if task:
-        session.delete(task)
-        session.commit()
-        message = "Task deleted!"
-    else:
-        message = "Task not found!"
-    session.close()
-    return jsonify({"message": message})
+    try:
+        data = request.json
+        session = SessionLocal()
+        task = session.query(Task).filter(Task.id == data["id"]).first()
+        if task:
+            session.delete(task)
+            session.commit()
+            message = "Task deleted!"
+        else:
+            message = "Task not found!"
+        session.close()
+        return jsonify({"message": message}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Route to update a task
 @app.route("/update_task", methods=["PUT"])
 def update_task():
-    data = request.json
-    session = SessionLocal()
-    task = session.query(Task).filter(Task.id == data["id"]).first()
-    if task:
-        task.task_name = data["task_name"]
-        task.date = data["date"]
-        task.parent_task_id = data.get("parent_task_id")
-        session.commit()
-        message = "Task updated!"
-    else:
-        message = "Task not found!"
-    session.close()
-    return jsonify({"message": message})
+    try:
+        data = request.json
+        session = SessionLocal()
+        task = session.query(Task).filter(Task.id == data["id"]).first()
+        if task:
+            task.task_name = data["task_name"]
+            task.date = data["date"]
+            task.parent_task_id = data.get("parent_task_id")
+            session.commit()
+            message = "Task updated!"
+        else:
+            message = "Task not found!"
+        session.close()
+        return jsonify({"message": message}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)
