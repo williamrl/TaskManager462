@@ -9,22 +9,22 @@
             "name": "Run npm start",
             "request": "launch",
             "type": "node-terminal",
-            "cwd": "${workspaceFolder}/task-manager"
+            "cwd": "${workspaceFolder}/frontend" // Ensure this points to the frontend folder
         },
         {
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",
             "url": "http://localhost:3000",
-            "webRoot": "${workspaceFolder}/task-manager"
+            "webRoot": "${workspaceFolder}/frontend" // Ensure this points to the frontend folder
         },
         {
             "name": "Python Debugger: Flask",
-            "type": "debugpy",
+            "type": "python",
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "api.py",
+                "FLASK_APP": "main.py", // Update to the correct entry point for your Flask app
                 "FLASK_DEBUG": "1"
             },
             "args": [
@@ -34,12 +34,12 @@
             ],
             "jinja": true,
             "autoStartBrowser": false,
-            "cwd": "${workspaceFolder}/utilities" // Ensure this points to the folder containing api.py
+            "cwd": "${workspaceFolder}/backend" // Ensure this points to the backend folder
         }
     ],
     "compounds": [
         {
-            "name": "start client, chrome, and API",
+            "name": "Start client, Chrome, and API",
             "configurations": [
                 "Run npm start",
                 "Launch Chrome against localhost",
