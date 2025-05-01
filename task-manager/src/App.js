@@ -6,6 +6,7 @@ import Tasks from './pages/Tasks';         // ✅ Add your tasks page
 import Completed from './pages/Completed'; // ✅ Optional stub page
 import Settings from './pages/Settings';   // ✅ Optional stub page
 import Sidenav from './component/Sidenav';
+import TaskList from './pages/TaskList';
 
 function App() {
   return (
@@ -18,7 +19,8 @@ function App() {
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/completed" element={<Completed />} />
             <Route path="/settings" element={<Settings />} />
-          </Routes>
+            <Route path="/tasks" element={<TaskList />} />
+        </Routes>
         </div>
       </div>
     </Router>

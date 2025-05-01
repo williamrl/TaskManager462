@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from task_tree import TaskNode
 from task_graph import TaskGraph
+from task_tree import build_task_tree
 
 app = Flask(__name__)
 CORS(app)  # Allow React frontend to talk to backend

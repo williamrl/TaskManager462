@@ -1,17 +1,18 @@
 // Sidenav.js
 import React from 'react';
 import { Link } from 'react-router-dom'; // ADD THIS
+import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 import './Sidenav.css';
 
 const Sidenav = () => {
   return (
     <div className="side-nav">
-      <h2 style={{ margin: 'none' }}>Task Manager</h2>
+      <h2 style={{margin: 'none'}}>Task Manager</h2>
       <ul>
-        <li><Link to="/">Dashboard</Link></li>
-        <li><Link to="/tasks">Tasks</Link></li>
-        <li><Link to="/completed">Completed</Link></li>
-        <li><Link to="/settings">Settings</Link></li>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#tasks">Tasks</a></li>
+        <li><a href="#completed">Completed</a></li>
+        <li><a href="#settings">Settings</a></li>
       </ul>
     </div>
   );

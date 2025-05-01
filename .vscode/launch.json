@@ -10,22 +10,40 @@
             "request": "launch",
             "type": "node-terminal",
             "cwd": "${workspaceFolder}/task-manager"
-
         },
         {
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",
-            "url": "http://localhost:3000`",
+            "url": "http://localhost:3000",
             "webRoot": "${workspaceFolder}/task-manager"
+        },
+        {
+            "name": "Python Debugger: Flask",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "api.py",
+                "FLASK_DEBUG": "1"
+            },
+            "args": [
+                "run",
+                "--no-debugger",
+                "--no-reload"
+            ],
+            "jinja": true,
+            "autoStartBrowser": false,
+            "cwd": "${workspaceFolder}/utilities" // Ensure this points to the folder containing api.py
         }
     ],
     "compounds": [
         {
-            "name": "start client and chrome",
+            "name": "start client, chrome, and API",
             "configurations": [
                 "Run npm start",
-                "Launch Chrome against localhost"
+                "Launch Chrome against localhost",
+                "Python Debugger: Flask"
             ]
         }
     ]
