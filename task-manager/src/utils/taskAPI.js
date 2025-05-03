@@ -1,64 +1,91 @@
-const API_BASE = 'http://127.0.0.1:5000'; // Flask default port
+const API_BASE_URL = "http://127.0.0.1:5000"; // Replace with your Flask server's URL if different
 
+// Fetch all tasks
 export const fetchTasks = async () => {
-  const response = await fetch(`${API_BASE}/tasks`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error(`Error fetching tasks: ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`Error fetching tasks: ${response.statusText}`);
+    }
+
+    const tasks = await response.json();
+    return tasks;
+  } catch (error) {
+    console.error("Error in fetchTasks:", error);
+    throw error;
   }
-  const data = await response.json();
-  console.log('Fetched tasks data:', data); // Log the parsed JSON data
-  return data;
 };
 
-// export const addTask = async (task_name, date, parent = null) => {
-//   const response = await fetch(`${API_BASE}/add_task`, {
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//     body: JSON.stringify({ task_name, date, parent }),
-//   });
+// Add a new task
+export const addTask = async (taskData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/add_task`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(taskData),
+    });
 
-//   if (!response.ok) {
-//     throw new Error(`Error adding task: ${response.statusText}`);
-//   }
+    if (!response.ok) {
+      throw new Error(`Error adding task: ${response.statusText}`);
+    }
 
-//   return await response.json();
-// };
+    const newTask = await response.json();
+    return newTask;
+  } catch (error) {
+    console.error("Error in addTask:", error);
+    throw error;
+  }
+};
 
-// export const updateTask = async (task_id, updates) => {
-//   const response = await fetch(`${API_BASE}/tasks/${task_id}`, {
-//     method: 'PUT',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//     body: JSON.stringify(updates),
-//   });
+// Update an existing task
+export const updateTask = async (taskId, updatedData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedData),
+    });
 
-//   if (!response.ok) {
-//     throw new Error(`Error updating task: ${response.statusText}`);
-//   }
+    if (!response.ok) {
+      throw new Error(`Error updating task: ${response.statusText}`);
+    }
 
-//   return await response.json();
-// };
+    const updatedTask = await response.json();
+    return updatedTask;
+  } catch (error) {
+    console.error("Error in updateTask:", error);
+    throw error;
+  }
+};
 
-// export const deleteTask = async (task_id) => {
-//   const response = await fetch(`${API_BASE}/tasks/${task_id}`, {
-//     method: 'DELETE',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//   });
+// Delete a task
+export const deleteTask = async (taskId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-//   if (!response.ok) {
-//     throw new Error(`Error deleting task: ${response.statusText}`);
-//   }
+    if (!response.ok) {
+      throw new Error(`Error deleting task: ${response.statusText}`);
+    }
 
-//   return await response.json();
-// };
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Error in deleteTask:", error);
+    throw error;
+  }
+};

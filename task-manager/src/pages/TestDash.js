@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { format, startOfWeek, addWeeks, subWeeks, addDays, isSameDay } from "date-fns";
+import { format,startOfWeek, addWeeks, subWeeks, addDays, isSameDay} from "date-fns";
 import { Grid, Card, CardContent, Typography, Button, Box } from "@mui/material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { fetchTasks } from "../utils/taskAPI";
 
 const sampleTasks = [
   {
@@ -52,26 +55,52 @@ const Task = ({ task, level = 0 }) => (
         borderRadius: "4px",
         padding: "4px 8px",
         fontSize: "14px",
-        fontWeight: level === 0 ? "bold" : "normal"
+        fontWeight: level === 0 ? "bold" : "normal",
       }}
     >
       {task.task_name}
     </Box>
     {task.children &&
-      task.children.map((child) => <Task key={child.id} task={child} level={level + 1} />)}
+      task.children.map((child) => (
+        <Task key={child.id} task={child} level={level + 1} />
+      ))}
   </Box>
 );
 
 const TestDash = () => {
-  const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [currentWeekStart, setCurrentWeekStart] = useState(
+    startOfWeek(new Date(), { weekStartsOn: 0 }) // Change weekStartsOn to 0 for Sunday
+  );
   const [tasks, setTasks] = useState([]);
+  const [openDatePicker, setOpenDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const loadTasks = async () => {
+    try {
+      const fetchedTasks = await fetchTasks(); // Replace with API call
+      setTasks(fetchedTasks);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
 
   useEffect(() => {
-    setTasks(sampleTasks);
+    loadTasks();
   }, [currentWeekStart]);
 
+  const handleDateChange = (date) => {
+    if (date) {
+      const weekStart = startOfWeek(date, { weekStartsOn: 0 }); // Update here as well
+      setCurrentWeekStart(weekStart);
+      setSelectedDate(date);
+    }
+  };
+
   const getTasksForDate = (date) => {
-    return tasks.filter((task) => isSameDay(new Date(task.date), date));
+    return tasks.filter((task) => {
+      const taskDate = new Date(task.date + "T00:00:00");
+      return isSameDay(taskDate, date);
+    });
   };
 
   return (
@@ -97,9 +126,9 @@ const TestDash = () => {
         }}
       >
         <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-          {format(currentWeekStart, "MMMM")}
+          {format(currentWeekStart, "MMMM yyyy")}
         </Typography>
-        <Box sx={{ display: "flex", gap: "10px" }}>
+        <Box sx={{ display: "flex", gap: "10px", alignItems: "center" }}>
           <Button
             onClick={() => setCurrentWeekStart(subWeeks(currentWeekStart, 1))}
             variant="contained"
@@ -111,7 +140,9 @@ const TestDash = () => {
             Previous
           </Button>
           <Button
-            onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}
+            onClick={() =>
+              setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }))
+            }
             variant="contained"
             sx={{
               backgroundColor: "#1565c0",
@@ -130,6 +161,30 @@ const TestDash = () => {
           >
             Next
           </Button>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              value={selectedDate}
+              onChange={(newDate) => {
+                handleDateChange(newDate);
+                setOpenDatePicker(false);
+              }}
+              open={openDatePicker}
+              onClose={() => setOpenDatePicker(false)}
+              slotProps={{
+                textField: { style: { display: "none" } },
+              }}
+            />
+            <Button
+              variant="contained"
+              onClick={() => setOpenDatePicker(true)}
+              sx={{
+                backgroundColor: "#4caf50",
+                "&:hover": { backgroundColor: "#388e3c" },
+              }}
+            >
+              Pick Date
+            </Button>
+          </LocalizationProvider>
         </Box>
       </Box>
 
@@ -138,21 +193,33 @@ const TestDash = () => {
         {[...Array(7)].map((_, i) => {
           const day = addDays(currentWeekStart, i);
           const dayTasks = getTasksForDate(day);
-          const isToday = isSameDay(day, new Date()); // Check if the day is today
+          const isToday = isSameDay(day, new Date());
 
           return (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={i} sx={{ width: "10vw", height: "85vh" }}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              lg={3}
+              key={i}
+              sx={{ width: "10vw", height: "85vh" }}
+            >
               <Card
                 variant="outlined"
                 sx={{
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
-                  boxShadow: isToday ? 8 : 3, // Stronger shadow for today's card
+                  boxShadow: isToday ? 8 : 3,
                   borderRadius: "12px",
-                  backgroundColor: "#fff", // Darker blue for today's card
-                  "&:hover": { boxShadow: 6, transform: "scale(1.02)" },
-                  transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+                  backgroundColor: "#fff",
+                  "&:hover": {
+                    boxShadow: 6,
+                    transform: "scale(1.02)",
+                  },
+                  transition:
+                    "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
                 }}
               >
                 <CardContent sx={{ flex: 1 }}>
@@ -160,17 +227,17 @@ const TestDash = () => {
                     variant="h7"
                     align="center"
                     sx={{
-                      fontWeight: isToday ? "bold" : "normal", // Bold text for today's card
-                      color: "#1976d2", // White text for today's card
+                      fontWeight: isToday ? "bold" : "normal",
+                      color: isToday ? "darkblue" : "#000000",
                     }}
                   >
                     {format(day, "EEEE M/d")}
                   </Typography>
-                  <Box sx={{ marginTop: "16px" }}> {/* Ensure spacing between Typography and tasks */}
-    {dayTasks.map((task) => (
-      <Task key={task.id} task={task} />
-    ))}
-  </Box>
+                  <Box sx={{ marginTop: "16px" }}>
+                    {dayTasks.map((task) => (
+                      <Task key={task.id} task={task} />
+                    ))}
+                  </Box>
                 </CardContent>
               </Card>
             </Grid>
