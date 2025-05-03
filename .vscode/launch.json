@@ -35,6 +35,24 @@
             "jinja": true,
             "autoStartBrowser": false,
             "cwd": "${workspaceFolder}/utilities" // Ensure this points to the folder containing api.py
+        },
+        {
+            "name": "Python Debugger: Task Flask API",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "flaskAPI.py",
+                "FLASK_DEBUG": "1"
+            },
+            "args": [
+                "run",
+                "--no-debugger",
+                "--no-reload"
+            ],
+            "jinja": true,
+            "autoStartBrowser": false,
+            "cwd": "${workspaceFolder}/utilities" // Ensure this points to the folder containing api.py
         }
     ],
     "compounds": [
@@ -47,8 +65,9 @@
             ]
         },
         {
-            "name": "start client in chrome only",
+            "name": "start client in chrome and test api",
             "configurations": [
+                "Python Debugger: Task Flask API",
                 "Run npm start",
                 "Launch Chrome against localhost"
             ]

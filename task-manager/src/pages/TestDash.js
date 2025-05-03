@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { format,startOfWeek, addWeeks, subWeeks, addDays, isSameDay} from "date-fns";
-import { Grid, Card, CardContent, Typography, Button, Box } from "@mui/material";
+import { format, startOfWeek, addWeeks, subWeeks, addDays, isSameDay } from "date-fns";
+import { Grid, Card, CardContent, Typography, Button, Box, IconButton } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { ArrowBack, ArrowForward } from "@mui/icons-material"; // Import icons
 import { fetchTasks } from "../utils/taskAPI";
+import Event from "@mui/icons-material/Event";
 
 const sampleTasks = [
   {
@@ -69,7 +71,7 @@ const Task = ({ task, level = 0 }) => (
 
 const TestDash = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(
-    startOfWeek(new Date(), { weekStartsOn: 0 }) // Change weekStartsOn to 0 for Sunday
+    startOfWeek(new Date(), { weekStartsOn: 0 })
   );
   const [tasks, setTasks] = useState([]);
   const [openDatePicker, setOpenDatePicker] = useState(false);
@@ -77,7 +79,7 @@ const TestDash = () => {
 
   const loadTasks = async () => {
     try {
-      const fetchedTasks = await fetchTasks(); // Replace with API call
+      const fetchedTasks = await fetchTasks();
       setTasks(fetchedTasks);
     } catch (error) {
       console.error("Error fetching tasks:", error);
@@ -90,7 +92,7 @@ const TestDash = () => {
 
   const handleDateChange = (date) => {
     if (date) {
-      const weekStart = startOfWeek(date, { weekStartsOn: 0 }); // Update here as well
+      const weekStart = startOfWeek(date, { weekStartsOn: 0 });
       setCurrentWeekStart(weekStart);
       setSelectedDate(date);
     }
@@ -112,55 +114,32 @@ const TestDash = () => {
       }}
     >
       {/* Header Section */}
-      <Box
+      <Grid
+        container
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
           marginBottom: "20px",
           padding: "10px 20px",
           backgroundColor: "#1976d2",
           color: "#fff",
           borderRadius: "8px",
           boxShadow: 3,
+          alignItems: "center",
+          display: "flex", // Ensure Flexbox layout
+          flexWrap: "nowrap", // Prevent wrapping
+          justifyContent: "space-between", // Space between elements
         }}
       >
-        <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-          {format(currentWeekStart, "MMMM yyyy")}
-        </Typography>
-        <Box sx={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          <Button
-            onClick={() => setCurrentWeekStart(subWeeks(currentWeekStart, 1))}
-            variant="contained"
-            sx={{
-              backgroundColor: "#1565c0",
-              "&:hover": { backgroundColor: "#0d47a1" },
-            }}
-          >
-            Previous
-          </Button>
-          <Button
-            onClick={() =>
-              setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }))
-            }
-            variant="contained"
-            sx={{
-              backgroundColor: "#1565c0",
-              "&:hover": { backgroundColor: "#0d47a1" },
-            }}
-          >
-            Today
-          </Button>
-          <Button
-            onClick={() => setCurrentWeekStart(addWeeks(currentWeekStart, 1))}
-            variant="contained"
-            sx={{
-              backgroundColor: "#1565c0",
-              "&:hover": { backgroundColor: "#0d47a1" },
-            }}
-          >
-            Next
-          </Button>
+        <Grid
+          item
+          xs={12}
+          sm={6}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: "20px",
+            overflow: "hidden", // Prevent overflow issues
+          }}
+        >
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <DatePicker
               value={selectedDate}
@@ -174,19 +153,79 @@ const TestDash = () => {
                 textField: { style: { display: "none" } },
               }}
             />
-            <Button
-              variant="contained"
+            <IconButton
               onClick={() => setOpenDatePicker(true)}
               sx={{
+                color: "#fff",
                 backgroundColor: "#4caf50",
                 "&:hover": { backgroundColor: "#388e3c" },
               }}
             >
-              Pick Date
-            </Button>
+              <Event />
+            </IconButton>
           </LocalizationProvider>
-        </Box>
-      </Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: "bold",
+              whiteSpace: "nowrap", // Prevent text wrapping
+              overflow: "hidden",
+              textOverflow: "ellipsis", // Truncate if necessary
+            }}
+          >
+            {format(currentWeekStart, "MMMM yyyy")}
+          </Typography>
+          
+        </Grid>
+
+        <Grid
+          item
+          xs={12}
+          sm={6}
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: "5px",
+            alignItems: "center",
+            flexWrap: "nowrap", // Prevent wrapping
+          }}
+        >
+          <Button
+            onClick={() =>
+              setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }))
+            }
+            variant="contained"
+            sx={{
+              backgroundColor: "#1565c0",
+              "&:hover": { backgroundColor: "#0d47a1" },
+              whiteSpace: "nowrap", // Prevent text wrapping
+            }}
+          >
+            Today
+          </Button>
+          <IconButton
+            onClick={() => setCurrentWeekStart(subWeeks(currentWeekStart, 1))}
+            sx={{
+              color: "#fff",
+              backgroundColor: "#1565c0",
+              "&:hover": { backgroundColor: "#0d47a1" },
+            }}
+          >
+            <ArrowBack />
+          </IconButton>
+
+          <IconButton
+            onClick={() => setCurrentWeekStart(addWeeks(currentWeekStart, 1))}
+            sx={{
+              color: "#fff",
+              backgroundColor: "#1565c0",
+              "&:hover": { backgroundColor: "#0d47a1" },
+            }}
+          >
+            <ArrowForward />
+          </IconButton>
+        </Grid>
+      </Grid>
 
       {/* Weekly Task Grid */}
       <Grid container spacing={3} sx={{ flexGrow: 1 }}>
@@ -203,7 +242,7 @@ const TestDash = () => {
               md={4}
               lg={3}
               key={i}
-              sx={{ width: "10vw", height: "85vh" }}
+              sx={{ width: "11vw", height: "85vh" }}
             >
               <Card
                 variant="outlined"

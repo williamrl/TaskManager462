@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import sys
+import os
 sys.path.append('/Users/avikbhuiyan/Desktop/projects/TaskManagerRepo/TaskManager462')
 from tree_graph.taskClass import Task, save_tasks_to_file, load_tasks_from_file
 
@@ -8,7 +9,7 @@ from flask_cors import CORS
 CORS(app)  # Add this line after creating the Flask app
 
 # File to store tasks
-TASKS_FILE = "tasks.json"
+TASKS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../tasks.json")
 
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
