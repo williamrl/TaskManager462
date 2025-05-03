@@ -50,7 +50,7 @@ def add_task():
     save_tasks_to_file(tasks, TASKS_FILE)  # Save updated tasks to file
     return jsonify(new_task.to_dict()), 201
 
-@app.route('/tasks/<int:task_id>', methods=['PUT'])
+@app.route('/tasks/<string:task_id>', methods=['PUT'])
 def update_task(task_id):
     try:
         tasks = load_tasks_from_file(TASKS_FILE)  # Load fresh data
@@ -58,11 +58,24 @@ def update_task(task_id):
         return jsonify({"error": "No tasks found"}), 404
 
     data = request.json
-    for task in tasks:
-        if task.find_by_id(task_id):
-            task.update_task(task_id, data.get('task_name'), data.get('date'))
-            save_tasks_to_file(tasks, TASKS_FILE)  # Save updated tasks to file
-            return jsonify(task.to_dict())
+
+    def find_and_update_task(task_list, task_id, new_name, new_date):
+        for task in task_list:
+            if task.id == task_id:
+                if new_name:
+                    task.task_name = new_name
+                if new_date:
+                    task.date = new_date
+                return task
+            updated_task = find_and_update_task(task.children, task_id, new_name, new_date)
+            if updated_task:
+                return updated_task
+        return None
+
+    updated_task = find_and_update_task(tasks, task_id, data.get('task_name'), data.get('date'))
+    if updated_task:
+        save_tasks_to_file(tasks, TASKS_FILE)  # Save updated tasks to file
+        return jsonify(updated_task.to_dict())
     return jsonify({"error": "Task not found"}), 404
 
 @app.route('/tasks/<int:task_id>', methods=['DELETE'])

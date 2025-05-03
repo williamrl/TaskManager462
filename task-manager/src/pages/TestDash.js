@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { format, startOfWeek, addWeeks, subWeeks, addDays, isSameDay } from "date-fns";
-import { Grid, Card, CardContent, Typography, Button, Box, IconButton } from "@mui/material";
+import { Grid, Card, CardContent, Typography, Button, Box, IconButton, Modal, TextField } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { ArrowBack, ArrowForward } from "@mui/icons-material"; // Import icons
-import { fetchTasks } from "../utils/taskAPI";
+import { ArrowBack, ArrowForward } from "@mui/icons-material";
+import { fetchTasks, addTask, updateTask } from "../utils/taskAPI";
 import Event from "@mui/icons-material/Event";
 
 const sampleTasks = [
@@ -19,15 +19,7 @@ const sampleTasks = [
         task_name: "Child Task A1",
         date: "2025-04-30",
         parent: "1",
-        children: [
-          {
-            id: "2",
-            task_name: "Independent Task B",
-            date: "2025-05-02",
-            parent: null,
-            children: []
-          }
-        ]
+        children: []
       },
       {
         id: "1-2",
@@ -47,8 +39,11 @@ const sampleTasks = [
   }
 ];
 
-const Task = ({ task, level = 0 }) => (
-  <Box sx={{ marginLeft: `${level * 20}px`, marginBottom: "8px" }}>
+const Task = ({ task, level = 0, onTaskClick }) => (
+  <Box
+    sx={{ marginLeft: `${level * 20}px`, marginBottom: "8px", cursor: "pointer" }}
+    onClick={() => onTaskClick(task)}
+  >
     <Box
       sx={{
         borderLeft: "2px solid #1976d2",
@@ -64,7 +59,7 @@ const Task = ({ task, level = 0 }) => (
     </Box>
     {task.children &&
       task.children.map((child) => (
-        <Task key={child.id} task={child} level={level + 1} />
+        <Task key={child.id} task={child} level={level + 1} onTaskClick={onTaskClick} />
       ))}
   </Box>
 );
@@ -73,9 +68,16 @@ const TestDash = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 0 })
   );
-  const [tasks, setTasks] = useState([]);
-  const [openDatePicker, setOpenDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [tasks, setTasks] = useState([]); // task list
+  const [openDatePicker, setOpenDatePicker] = useState(false); // set week view date picker open state
+  const [selectedDate, setSelectedDate] = useState(new Date()); // selected date for the week view
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+
+  // Add state for new task inputs
+  const [newTaskName, setNewTaskName] = useState("");
+  const [newTaskDate, setNewTaskDate] = useState(new Date());
 
   const loadTasks = async () => {
     try {
@@ -105,6 +107,55 @@ const TestDash = () => {
     });
   };
 
+  const handleAddTask = async () => {
+    if (!newTaskName || !newTaskDate) {
+      console.error("Task name and date are required.");
+      return;
+    }
+
+    const taskData = {
+      task_name: newTaskName,
+      date: format(newTaskDate, "yyyy-MM-dd"), // Format date to match API requirements
+      parent: null, // Assuming no parent task for now
+    };
+
+    try {
+      await addTask(taskData); // Call the API to add the task
+      setIsAddTaskModalOpen(false); // Close the modal
+      setNewTaskName(""); // Reset the task name input
+      setNewTaskDate(new Date()); // Reset the date picker
+      loadTasks(); // Reload tasks to reflect the new task
+    } catch (error) {
+      console.error("Error adding task:", error);
+    }
+  };
+
+  const handleUpdateTask = async () => {
+    if (!selectedTask || !selectedTask.task_name || !selectedTask.date) {
+      console.error("Task name and date are required.");
+      return;
+    }
+
+    const updatedTaskData = {
+      task_name: selectedTask.task_name,
+      date: selectedTask.date, // Use the date directly without reformatting
+    };
+
+    try {
+      await updateTask(selectedTask.id, updatedTaskData); // Call the API to update the task
+      setIsEditTaskModalOpen(false); // Close the modal
+      setSelectedTask(null); // Reset the selected task
+      loadTasks(); // Reload tasks to reflect the updated task
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
+  };
+
+  const handleTaskClick = (task) => {
+    setSelectedTask(task);
+    setIsEditTaskModalOpen(true);
+  };
+
   return (
     <Box
       sx={{
@@ -124,9 +175,9 @@ const TestDash = () => {
           borderRadius: "8px",
           boxShadow: 3,
           alignItems: "center",
-          display: "flex", // Ensure Flexbox layout
-          flexWrap: "nowrap", // Prevent wrapping
-          justifyContent: "space-between", // Space between elements
+          display: "flex",
+          flexWrap: "nowrap",
+          justifyContent: "space-between",
         }}
       >
         <Grid
@@ -137,7 +188,7 @@ const TestDash = () => {
             display: "flex",
             alignItems: "center",
             gap: "20px",
-            overflow: "hidden", // Prevent overflow issues
+            overflow: "hidden",
           }}
         >
           <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -168,14 +219,13 @@ const TestDash = () => {
             variant="h4"
             sx={{
               fontWeight: "bold",
-              whiteSpace: "nowrap", // Prevent text wrapping
+              whiteSpace: "nowrap",
               overflow: "hidden",
-              textOverflow: "ellipsis", // Truncate if necessary
+              textOverflow: "ellipsis",
             }}
           >
             {format(currentWeekStart, "MMMM yyyy")}
           </Typography>
-          
         </Grid>
 
         <Grid
@@ -187,9 +237,20 @@ const TestDash = () => {
             justifyContent: "flex-end",
             gap: "5px",
             alignItems: "center",
-            flexWrap: "nowrap", // Prevent wrapping
+            flexWrap: "nowrap",
           }}
         >
+          <Button
+            onClick={() => setIsAddTaskModalOpen(true)}
+            variant="contained"
+            sx={{
+              backgroundColor: "#4caf50",
+              "&:hover": { backgroundColor: "#388e3c" },
+              whiteSpace: "nowrap",
+            }}
+          >
+            Add Task
+          </Button>
           <Button
             onClick={() =>
               setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 0 }))
@@ -198,7 +259,7 @@ const TestDash = () => {
             sx={{
               backgroundColor: "#1565c0",
               "&:hover": { backgroundColor: "#0d47a1" },
-              whiteSpace: "nowrap", // Prevent text wrapping
+              whiteSpace: "nowrap",
             }}
           >
             Today
@@ -274,7 +335,7 @@ const TestDash = () => {
                   </Typography>
                   <Box sx={{ marginTop: "16px" }}>
                     {dayTasks.map((task) => (
-                      <Task key={task.id} task={task} />
+                      <Task key={task.id} task={task} onTaskClick={handleTaskClick} />
                     ))}
                   </Box>
                 </CardContent>
@@ -283,6 +344,105 @@ const TestDash = () => {
           );
         })}
       </Grid>
+
+      {/* Add Task Modal */}
+      <Modal
+        open={isAddTaskModalOpen}
+        onClose={() => setIsAddTaskModalOpen(false)}
+        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
+        <Box
+          sx={{
+            width: "400px",
+            backgroundColor: "#fff",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: 24,
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: "16px", color: "black" }}>
+            Add Task
+          </Typography>
+          <TextField
+            fullWidth
+            label="Task Name"
+            variant="outlined"
+            value={newTaskName}
+            onChange={(e) => setNewTaskName(e.target.value)}
+            sx={{ marginBottom: "16px" }}
+          />
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              label="Task Date"
+              value={newTaskDate}
+              onChange={(newDate) => setNewTaskDate(newDate)}
+              renderInput={(params) => (
+                <TextField {...params} fullWidth sx={{ marginBottom: "16px" }} />
+              )}
+            />
+          </LocalizationProvider>
+          <Button
+            variant="contained"
+            onClick={handleAddTask}
+            sx={{ backgroundColor: "#4caf50", "&:hover": { backgroundColor: "#388e3c" } }}
+          >
+            Save
+          </Button>
+        </Box>
+      </Modal>
+
+      {/* Edit Task Modal */}
+      <Modal
+        open={isEditTaskModalOpen}
+        onClose={() => setIsEditTaskModalOpen(false)}
+        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
+        <Box
+          sx={{
+            width: "400px",
+            backgroundColor: "#fff",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: 24,
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: "16px" }}>
+            Edit Task
+          </Typography>
+          <TextField
+            fullWidth
+            label="Task Name"
+            variant="outlined"
+            value={selectedTask?.task_name || ""}
+            onChange={(e) =>
+              setSelectedTask((prev) => ({ ...prev, task_name: e.target.value }))
+            }
+            sx={{ marginBottom: "16px" }}
+          />
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              label="Task Date"
+              value={selectedTask ? new Date(selectedTask.date + "T00:00:00") : new Date()}
+              onChange={(newDate) =>
+                setSelectedTask((prev) => ({
+                  ...prev,
+                  date: format(newDate, "yyyy-MM-dd"),
+                }))
+              }
+              renderInput={(params) => (
+                <TextField {...params} fullWidth sx={{ marginBottom: "16px" }} />
+              )}
+            />
+          </LocalizationProvider>
+          <Button
+            variant="contained"
+            onClick={handleUpdateTask}
+            sx={{ backgroundColor: "#4caf50", "&:hover": { backgroundColor: "#388e3c" } }}
+          >
+            Save
+          </Button>
+        </Box>
+      </Modal>
     </Box>
   );
 };
