@@ -45,6 +45,13 @@
                 "Launch Chrome against localhost",
                 "Python Debugger: Flask"
             ]
+        },
+        {
+            "name": "start client in chrome only",
+            "configurations": [
+                "Run npm start",
+                "Launch Chrome against localhost"
+            ]
         }
     ]
 }
