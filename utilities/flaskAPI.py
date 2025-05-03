@@ -78,19 +78,25 @@ def update_task(task_id):
         return jsonify(updated_task.to_dict())
     return jsonify({"error": "Task not found"}), 404
 
-@app.route('/tasks/<int:task_id>', methods=['DELETE'])
+@app.route('/tasks/<string:task_id>', methods=['DELETE'])
 def delete_task(task_id):
     try:
         tasks = load_tasks_from_file(TASKS_FILE)  # Load fresh data
     except FileNotFoundError:
         return jsonify({"error": "No tasks found"}), 404
 
-    for task in tasks:
-        if task.find_by_id(task_id):
-            task.delete_task(task_id)
-            tasks = [task for task in tasks if task.id != task_id]
-            save_tasks_to_file(tasks, TASKS_FILE)  # Save updated tasks to file
-            return jsonify({"message": "Task deleted"})
+    def find_and_delete_task(task_list, task_id):
+        for task in task_list:
+            if task.id == task_id:
+                task_list.remove(task)  # Remove only the selected task
+                return True
+            if find_and_delete_task(task.children, task_id):  # Recursively check children
+                return True
+        return False
+
+    if find_and_delete_task(tasks, task_id):
+        save_tasks_to_file(tasks, TASKS_FILE)  # Save updated tasks to file
+        return jsonify({"message": "Task deleted"})
     return jsonify({"error": "Task not found"}), 404
 
 if __name__ == '__main__':

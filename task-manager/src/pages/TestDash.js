@@ -4,7 +4,7 @@ import { Grid, Card, CardContent, Typography, Button, Box, IconButton, Modal, Te
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ArrowBack, ArrowForward } from "@mui/icons-material";
-import { fetchTasks, addTask, updateTask } from "../utils/taskAPI";
+import { fetchTasks, addTask, updateTask, deleteTask } from "../utils/taskAPI";
 import Event from "@mui/icons-material/Event";
 
 const sampleTasks = [
@@ -73,6 +73,7 @@ const TestDash = () => {
   const [selectedDate, setSelectedDate] = useState(new Date()); // selected date for the week view
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
+  const [isAddSubTaskModalOpen, setIsAddSubTaskModalOpen] = useState(false); // New state for sub-task modal
   const [selectedTask, setSelectedTask] = useState(null);
 
   // Add state for new task inputs
@@ -151,9 +152,49 @@ const TestDash = () => {
     }
   };
 
+  const handleAddSubTask = async () => {
+    if (!selectedTask || !newTaskName || !newTaskDate) {
+      console.error("Parent task, sub-task name, and date are required.");
+      return;
+    }
+
+    const subTaskData = {
+      task_name: newTaskName,
+      date: format(newTaskDate, "yyyy-MM-dd"),
+      parent: selectedTask.id, // Set the parent task ID
+    };
+
+    try {
+      await addTask(subTaskData); // Call the API to add the sub-task
+      setIsAddSubTaskModalOpen(false); // Close the sub-task modal
+      setNewTaskName(""); // Reset the sub-task name input
+      setNewTaskDate(new Date()); // Reset the date picker
+      loadTasks(); // Reload tasks to reflect the new sub-task
+    } catch (error) {
+      console.error("Error adding sub-task:", error);
+    }
+  };
+
+  // Function to handle deleting a task
+  const handleDeleteTask = async () => {
+    if (!selectedTask) {
+      console.error("No task selected for deletion.");
+      return;
+    }
+
+    try {
+      await deleteTask(selectedTask.id); // Call the API to delete only the selected task
+      setIsEditTaskModalOpen(false); // Close the modal
+      setSelectedTask(null); // Reset the selected task
+      loadTasks(); // Reload tasks to reflect the deletion
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };
+
   const handleTaskClick = (task) => {
-    setSelectedTask(task);
-    setIsEditTaskModalOpen(true);
+    setSelectedTask({ ...task }); // Set the clicked task as the selected task
+    setIsEditTaskModalOpen(true); // Open the edit modal
   };
 
   return (
@@ -391,6 +432,52 @@ const TestDash = () => {
         </Box>
       </Modal>
 
+      {/* Add Sub-Task Modal */}
+      <Modal
+        open={isAddSubTaskModalOpen}
+        onClose={() => setIsAddSubTaskModalOpen(false)}
+        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+      >
+        <Box
+          sx={{
+            width: "400px",
+            backgroundColor: "#fff",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: 24,
+          }}
+        >
+          <Typography variant="h6" sx={{ marginBottom: "16px", color: "black" }}>
+            Add Sub-Task
+          </Typography>
+          <TextField
+            fullWidth
+            label="Sub-Task Name"
+            variant="outlined"
+            value={newTaskName}
+            onChange={(e) => setNewTaskName(e.target.value)}
+            sx={{ marginBottom: "16px" }}
+          />
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <DatePicker
+              label="Sub-Task Date"
+              value={newTaskDate}
+              onChange={(newDate) => setNewTaskDate(newDate)}
+              renderInput={(params) => (
+                <TextField {...params} fullWidth sx={{ marginBottom: "16px" }} />
+              )}
+            />
+          </LocalizationProvider>
+          <Button
+            variant="contained"
+            onClick={handleAddSubTask}
+            sx={{ backgroundColor: "#4caf50", "&:hover": { backgroundColor: "#388e3c" } }}
+          >
+            Save Sub-Task
+          </Button>
+        </Box>
+      </Modal>
+
       {/* Edit Task Modal */}
       <Modal
         open={isEditTaskModalOpen}
@@ -434,13 +521,29 @@ const TestDash = () => {
               )}
             />
           </LocalizationProvider>
-          <Button
-            variant="contained"
-            onClick={handleUpdateTask}
-            sx={{ backgroundColor: "#4caf50", "&:hover": { backgroundColor: "#388e3c" } }}
-          >
-            Save
-          </Button>
+          <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: "16px" }}>
+            <Button
+              variant="contained"
+              onClick={() => setIsAddSubTaskModalOpen(true)} // Open the sub-task modal
+              sx={{ backgroundColor: "#1976d2", "&:hover": { backgroundColor: "#115293" } }}
+            >
+              Add Sub-Task
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleUpdateTask}
+              sx={{ backgroundColor: "#4caf50", "&:hover": { backgroundColor: "#388e3c" } }}
+            >
+              Save
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleDeleteTask}
+              sx={{ backgroundColor: "#d32f2f", "&:hover": { backgroundColor: "#9a0007" } }}
+            >
+              Delete Task
+            </Button>
+          </Box>
         </Box>
       </Modal>
     </Box>
