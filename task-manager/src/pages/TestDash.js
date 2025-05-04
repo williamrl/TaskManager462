@@ -40,10 +40,7 @@ const sampleTasks = [
 ];
 
 const Task = ({ task, level = 0, onTaskClick }) => (
-  <Box
-    sx={{ marginLeft: `${level * 20}px`, marginBottom: "8px", cursor: "pointer" }}
-    onClick={() => onTaskClick(task)}
-  >
+  <Box sx={{ marginLeft: `${level * 20}px`, marginBottom: "8px" }}>
     <Box
       sx={{
         borderLeft: "2px solid #1976d2",
@@ -53,16 +50,23 @@ const Task = ({ task, level = 0, onTaskClick }) => (
         padding: "4px 8px",
         fontSize: "14px",
         fontWeight: level === 0 ? "bold" : "normal",
+        cursor: "pointer"
+      }}
+      onClick={(e) => {
+        e.stopPropagation(); // prevent parent handlers
+        onTaskClick(task);
       }}
     >
       {task.task_name}
     </Box>
+
     {task.children &&
       task.children.map((child) => (
         <Task key={child.id} task={child} level={level + 1} onTaskClick={onTaskClick} />
       ))}
   </Box>
 );
+
 
 const TestDash = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(

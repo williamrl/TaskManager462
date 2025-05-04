@@ -4,15 +4,7 @@
     "task_name": "THIS A CHILD",
     "date": "2025-01-01",
     "parent": null,
-    "children": [
-      {
-        "id": "9b6cf8e3-b88e-4149-8715-5112664ffab2",
-        "task_name": "THIS A CHILD",
-        "date": "2025-01-01",
-        "parent": "ce5ee9ed-462c-459f-829a-9ec94994ebf9",
-        "children": []
-      }
-    ]
+    "children": []
   },
   {
     "id": "a5691598-05d6-4dfa-a9f3-96747a4fa407",
@@ -36,37 +28,8 @@
     "children": []
   },
   {
-    "id": "0a1c0082-f25f-4e25-813f-c3f2f34731c5",
-    "task_name": "i can update this task",
-    "date": "2025-04-29",
-    "parent": null,
-    "children": []
-  },
-  {
-    "id": "c4f1681d-37ad-4166-9425-3c28f96dd38b",
-    "task_name": "add works 1/2",
-    "date": "2025-01-02",
-    "parent": null,
-    "children": []
-  },
-  {
-    "id": "063a1312-20e5-4f1e-8d99-fa6236babeb8",
-    "task_name": "asdasd",
-    "date": "2025-05-03",
-    "parent": null,
-    "children": [
-      {
-        "id": "330bb274-ddf0-412d-9a65-917aa6c26b75",
-        "task_name": "sub task works",
-        "date": "2025-05-03",
-        "parent": "063a1312-20e5-4f1e-8d99-fa6236babeb8",
-        "children": []
-      }
-    ]
-  },
-  {
-    "id": "a652cd6c-2ec8-4c9b-bfbb-6e19657efce2",
-    "task_name": "test",
+    "id": "4cfab4c3-a0cb-45d7-ab98-ac55ea05056b",
+    "task_name": "another task",
     "date": "2025-05-03",
     "parent": null,
     "children": []
