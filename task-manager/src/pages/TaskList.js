@@ -4,21 +4,22 @@ import { fetchTasks, updateTask, deleteTask, addTask } from "../utils/taskAPI";
 import { format } from "date-fns";
 
 const Task = ({ task, level = 0, onTaskClick, onDelete, onAddSubTask }) => (
-  <Box sx={{ marginLeft: `${level * 20}px`, marginBottom: "8px" }}>
+  <Box sx={{ marginLeft: `${level * 20}px`, marginBottom: "8px", padding: "2px" }}>
     <Box
       sx={{
         borderLeft: "2px solid #0d47a1", // Darker blue for the border
         paddingLeft: "8px",
-        backgroundColor: level === 0 ? "#1565c0" : "#1b5e20", // Darker shades for background
+        backgroundColor: level === 0 ? "#8dcfff" : level === 1 ? "#c1e5ff": "#e9f6ff",
         borderRadius: "4px",
         padding: "4px 8px",
         fontSize: "14px",
         fontWeight: level === 0 ? "bold" : "normal",
         cursor: "pointer",
-        color: "#ffffff", // White text for better contrast
+        color: "black", // White text for better contrast
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
+        border: "1px solid #0d47a1", 
       }}
     >
       <Box>
@@ -26,7 +27,7 @@ const Task = ({ task, level = 0, onTaskClick, onDelete, onAddSubTask }) => (
         {level === 0 && (
           <Typography
             variant="caption"
-            sx={{ display: "block", color: "#bbdefb", marginTop: "4px" }}
+            sx={{ display: "block", color: "black", marginTop: "4px" }}
           >
             {task.date}
           </Typography>
@@ -285,7 +286,7 @@ const TaskList = () => {
             boxShadow: 24,
           }}
         >
-          <Typography variant="h6" sx={{ marginBottom: "16px" }}>
+          <Typography variant="h6" sx={{ marginBottom: "16px", color: "black"}}>
             Add New Task
           </Typography>
           <TextField
@@ -339,7 +340,7 @@ const TaskList = () => {
             boxShadow: 24,
           }}
         >
-          <Typography variant="h6" sx={{ marginBottom: "16px" }}>
+          <Typography variant="h6" sx={{ marginBottom: "16px", color: "black"}}>
             Add Subtask
           </Typography>
           <TextField
