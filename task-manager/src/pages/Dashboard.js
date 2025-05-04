@@ -253,8 +253,8 @@ const Dashboard = () => {
               onClick={() => setOpenDatePicker(true)}
               sx={{
                 color: "#fff",
-                backgroundColor: "#4caf50",
-                "&:hover": { backgroundColor: "#388e3c" },
+                backgroundColor: "#1665c0",
+                "&:hover": { backgroundColor: "#0d47a1" },
               }}
             >
               <Event />

@@ -10,13 +10,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: auto;
 }
 
 .side-nav h2 {
-  margin-bottom: 30px;
+  margin-bottom: 10px;
   font-size: 24px;
   font-weight: bold;
-  color: #4caf50; /* Accent color for the title */
+  color: #2642fd; /* Accent color for the title */
   text-align: center;
 }
 
@@ -27,7 +28,7 @@
 }
 
 .side-nav ul li {
-  margin: 15px 0;
+  margin: 0px 0;
   width: 100%;
 }
 
@@ -43,13 +44,13 @@
 }
 
 .side-nav ul li a:hover {
-  background-color: #4caf50; /* Green hover effect */
+  background-color: #243784; /* Green hover effect */
   color: #ffffff;
   text-decoration: none;
 }
 
 .side-nav ul li a.active {
-  background-color: #4caf50; /* Highlight active link */
+  background-color: #243784; /* Highlight active link */
   color: #ffffff;
   font-weight: bold;
 }
