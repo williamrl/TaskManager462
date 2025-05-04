@@ -45,11 +45,11 @@ const Task = ({ task, level = 0, onTaskClick }) => (
       sx={{
         borderLeft: "2px solid #1976d2",
         paddingLeft: "8px",
-        backgroundColor: level === 0 ? "#8dcfff" : level === 1 ? "#c1e5ff": "#e9f6ff",
+        backgroundColor: level === 0 ? "#8dcfff" : level === 1 ? "#c1e5ff" : "#e9f6ff",
         borderRadius: "4px",
         padding: "4px 8px",
         fontSize: "14px",
-        fontWeight: level === 0 ? "bold" :  "normal",
+        fontWeight: level === 0 ? "bold" : "normal",
         cursor: "pointer"
       }}
       onClick={(e) => {
@@ -428,6 +428,7 @@ const Dashboard = () => {
               renderInput={(params) => (
                 <TextField {...params} fullWidth sx={{ marginBottom: "16px" }} />
               )}
+              sx={{ width: "100%" }} // Ensure the DatePicker spans the full width
             />
           </LocalizationProvider>
           <Box sx={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>
@@ -478,13 +479,15 @@ const Dashboard = () => {
               )}
             />
           </LocalizationProvider>
-          <Button
-            variant="contained"
-            onClick={handleAddSubTask}
-            sx={{ backgroundColor: "#4caf50", "&:hover": { backgroundColor: "#388e3c" } }}
-          >
-            Save Sub-Task
-          </Button>
+          <Box sx={{ display: "flex", justifyContent: "center", marginTop: "16px" }}>
+            <Button
+              variant="contained"
+              onClick={handleAddSubTask}
+              sx={{ backgroundColor: "#4caf50", "&:hover": { backgroundColor: "#388e3c" } }}
+            >
+              Save Sub-Task
+            </Button>
+          </Box>
         </Box>
       </Modal>
 
@@ -529,6 +532,7 @@ const Dashboard = () => {
               renderInput={(params) => (
                 <TextField {...params} fullWidth sx={{ marginBottom: "16px" }} />
               )}
+              sx={{ width: "100%" }} // Ensure the DatePicker spans the full width
             />
           </LocalizationProvider>
           <Box sx={{ display: "flex", justifyContent: "space-between", marginTop: "16px" }}>

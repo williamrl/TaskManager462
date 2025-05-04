@@ -13,26 +13,10 @@
         "children": [
           {
             "id": "5aaab3ae-5d78-41fe-ab2c-575b0347da24",
-            "task_name": "sub task of this",
+            "task_name": "changed",
             "date": "2025-05-04",
             "parent": "b621b389-6f1a-4893-a43a-b6cc71b2e0b8",
-            "children": [
-              {
-                "id": "83582458-5c33-4705-a4ef-b21719ac6469",
-                "task_name": "another sub",
-                "date": "2025-05-04",
-                "parent": "5aaab3ae-5d78-41fe-ab2c-575b0347da24",
-                "children": [
-                  {
-                    "id": "ad233132-0ee6-4f43-9694-9fe25e9f6b18",
-                    "task_name": "another sub",
-                    "date": "2025-05-04",
-                    "parent": "83582458-5c33-4705-a4ef-b21719ac6469",
-                    "children": []
-                  }
-                ]
-              }
-            ]
+            "children": []
           }
         ]
       }
@@ -53,20 +37,6 @@
     "children": []
   },
   {
-    "id": "96dda139-4fed-4acb-a763-9dcf64970c6e",
-    "task_name": "later",
-    "date": "2025-10-16",
-    "parent": null,
-    "children": []
-  },
-  {
-    "id": "5027ab4b-ef75-4103-b21e-7e8baf502174",
-    "task_name": "11:15 am doc appt",
-    "date": "2025-05-16",
-    "parent": null,
-    "children": []
-  },
-  {
     "id": "e5fde463-e2c3-47ad-8a53-a915fb9eca17",
     "task_name": "new task",
     "date": "2025-05-04",
@@ -79,14 +49,36 @@
         "parent": "e5fde463-e2c3-47ad-8a53-a915fb9eca17",
         "children": [
           {
-            "id": "ba4e8da6-0aa1-4695-92a7-9d4376bf3a95",
-            "task_name": "another sub",
+            "id": "ee134272-3429-4c55-8283-ef8ab1ca5f3d",
+            "task_name": "sub of sub",
             "date": "2025-05-04",
             "parent": "3aba8ac1-d222-47f4-86e0-9765a946d2d8",
             "children": []
           }
         ]
+      },
+      {
+        "id": "9e50a936-6020-4aab-9979-1356ee6a36d4",
+        "task_name": "new sub",
+        "date": "2025-05-04",
+        "parent": "e5fde463-e2c3-47ad-8a53-a915fb9eca17",
+        "children": [
+          {
+            "id": "4b49d54b-c2be-4ef3-9438-9a75cc981f20",
+            "task_name": "sub of new sub",
+            "date": "2025-05-04",
+            "parent": "9e50a936-6020-4aab-9979-1356ee6a36d4",
+            "children": []
+          }
+        ]
       }
     ]
+  },
+  {
+    "id": "a4e69b58-96ac-436f-9268-ba32699fc62c",
+    "task_name": "new",
+    "date": "2025-05-04",
+    "parent": null,
+    "children": []
   }
 ]

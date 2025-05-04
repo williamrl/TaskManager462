@@ -4,12 +4,15 @@ import { fetchTasks, updateTask, deleteTask, addTask } from "../utils/taskAPI";
 import { format } from "date-fns";
 
 const Task = ({ task, level = 0, onTaskClick, onDelete, onAddSubTask }) => (
-  <Box sx={{ marginLeft: `${level * 20}px`, marginBottom: "8px", padding: "2px" }}>
+  <Box
+    sx={{ marginLeft: `${level * 20}px`, marginBottom: "8px", padding: "2px" }}
+    onClick={() => onTaskClick(task)} // Make the entire row clickable
+  >
     <Box
       sx={{
         borderLeft: "2px solid #0d47a1", // Darker blue for the border
         paddingLeft: "8px",
-        backgroundColor: level === 0 ? "#8dcfff" : level === 1 ? "#c1e5ff": "#e9f6ff",
+        backgroundColor: level === 0 ? "#8dcfff" : level === 1 ? "#c1e5ff" : "#e9f6ff",
         borderRadius: "4px",
         padding: "4px 8px",
         fontSize: "14px",
@@ -19,11 +22,10 @@ const Task = ({ task, level = 0, onTaskClick, onDelete, onAddSubTask }) => (
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        border: "1px solid #0d47a1", 
       }}
     >
       <Box>
-        <span onClick={() => onTaskClick(task)}>{task.task_name}</span>
+        <span>{task.task_name}</span>
         {level === 0 && (
           <Typography
             variant="caption"
@@ -43,7 +45,7 @@ const Task = ({ task, level = 0, onTaskClick, onDelete, onAddSubTask }) => (
             marginRight: "8px",
           }}
           onClick={(e) => {
-            e.stopPropagation();
+            e.stopPropagation(); // Prevent triggering the row click
             onAddSubTask(task);
           }}
         >
@@ -57,7 +59,7 @@ const Task = ({ task, level = 0, onTaskClick, onDelete, onAddSubTask }) => (
             "&:hover": { backgroundColor: "#7f0000" },
           }}
           onClick={(e) => {
-            e.stopPropagation();
+            e.stopPropagation(); // Prevent triggering the row click
             onDelete(task.id);
           }}
         >
@@ -232,7 +234,7 @@ const TaskList = () => {
             boxShadow: 24,
           }}
         >
-          <Typography variant="h6" sx={{ marginBottom: "16px" }}>
+          <Typography variant="h6" sx={{ marginBottom: "16px", color: "black"}}>
             Edit Task
           </Typography>
           <TextField
