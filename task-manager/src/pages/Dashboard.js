@@ -372,8 +372,12 @@ const Dashboard = () => {
                     variant="h7"
                     align="center"
                     sx={{
-                      fontWeight: isToday ? "bold" : "normal",
-                      color: isToday ? "darkblue" : "#000000",
+                      fontWeight: "bold",
+                      color: isToday ? "white" : "#000000",
+                      fontFamily: "monospace",
+                      backgroundColor: isToday ? "darkblue" : "#fff",
+                      padding: isToday ? "7px" : "0",
+                      borderRadius: isToday ? "8px" : "0",
                     }}
                   >
                     {format(day, "EEEE M/d")}

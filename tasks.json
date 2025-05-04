@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "id": "43068d7d-e1be-40db-8340-0ae575c48db1",
+    "task_name": "new task",
+    "date": "2025-05-04",
+    "parent": null,
+    "children": []
+  }
+]
