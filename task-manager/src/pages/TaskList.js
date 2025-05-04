@@ -127,7 +127,7 @@ const TaskList = () => {
 
     const newSubTaskData = {
       task_name: newSubTaskName,
-      date: format(new Date(newSubTaskDate), "yyyy-MM-dd"),
+      date: newSubTaskDate, // Use the date directly from the input
       parent: selectedTask.id, // Set the parent task ID
     };
 
@@ -179,7 +179,7 @@ const TaskList = () => {
 
     const newTaskData = {
       task_name: newTaskName,
-      date: format(new Date(newTaskDate), "yyyy-MM-dd"),
+      date: newTaskDate, // Use the date directly from the input
       parent: null, // New tasks are parent tasks
     };
 

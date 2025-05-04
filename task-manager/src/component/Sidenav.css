@@ -1,32 +1,55 @@
 .side-nav {
-    width: 150px;
-    background-color: #2e2e2e;
-    color: white;
-    padding: 20px;
-    position: relative;
-    top: 0;
-    left: 0;
-  }
-  
-  .side-nav h2 {
-    margin-bottom: 20px;
-  }
-  
-  .side-nav ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .side-nav ul li {
-    margin: 15px 0;
-  }
-  
-  .side-nav ul li a {
-    color: white;
-    text-decoration: none;
-    font-size: 16px;
-  }
-  
-  .side-nav ul li a:hover {
-    text-decoration: underline;
-  }
+  width: 150px;
+  background-color: #1e1e2f; /* Dark modern background */
+  color: #ffffff;
+  padding: 20px;
+  top: 0;
+  left: 0;
+  height: 100vh; /* Full height */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.side-nav h2 {
+  margin-bottom: 30px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #4caf50; /* Accent color for the title */
+  text-align: center;
+}
+
+.side-nav ul {
+  list-style-type: none;
+  padding: 0;
+  width: 100%;
+}
+
+.side-nav ul li {
+  margin: 15px 0;
+  width: 100%;
+}
+
+.side-nav ul li a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 500;
+  padding: 10px 15px;
+  display: block;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.side-nav ul li a:hover {
+  background-color: #4caf50; /* Green hover effect */
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.side-nav ul li a.active {
+  background-color: #4caf50; /* Highlight active link */
+  color: #ffffff;
+  font-weight: bold;
+}
